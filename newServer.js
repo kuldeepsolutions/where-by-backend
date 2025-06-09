@@ -128,6 +128,10 @@ const createWherebyRoom = async (endDate) => {
       recording: {
         type: "local",
         enabled: true,
+        destination:{
+            fileFormat:"mkv"
+
+        },
         startTrigger: "none",
       },
 

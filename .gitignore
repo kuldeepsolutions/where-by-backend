@@ -1,0 +1,9 @@
+node_modules/
+
+.env
+server.js
+index.js
+
+./controllers/
+./routes/
+./services/

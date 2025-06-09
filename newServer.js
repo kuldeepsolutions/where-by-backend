@@ -28,8 +28,6 @@
 //   })
 // );
 
-
-
 // var rcsdk = new SDK({
 //     'server':       process.env.RINGCENTRAL_SERVER,
 //     'clientId':     process.env.RINGCENTRAL_CLIENT_ID,
@@ -94,78 +92,88 @@
 // const PORT = process.env.PORT || 5000;
 // app.listen(5000, () => console.log(`🚀 Server running on port ${PORT}`));
 
-import express from 'express';
-import cors from 'cors';
-import crypto from 'crypto';
-import morgan from 'morgan';
-import axios from 'axios';
-import dotenv from 'dotenv';
-import { hostname } from 'os';
+import express from "express";
+import cors from "cors";
+import crypto from "crypto";
+import morgan from "morgan";
+import axios from "axios";
+import dotenv from "dotenv";
+import { hostname } from "os";
 dotenv.config();
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:3000', // local dev
-  'https://where-by-test-app.onrender.com', // deployed frontend
+  "http://localhost:3000", // local dev
+  "https://where-by-test-app.onrender.com", // deployed frontend
 ];
 app.use(express.json());
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 const createWherebyRoom = async (endDate) => {
-  const res = await axios.post('https://api.whereby.dev/v1/meetings', {
-    endDate: endDate || new Date(Date.now() + 60 * 60 * 1000).toISOString(), // default to 1 hour from now
-    isLocked: true,
-    roomMode: 'group',
-    roomNamePrefix: 'example-prefix',
-    roomNamePattern: 'uuid',
-    templateType: 'viewerMode',
-    fields: ['hostRoomUrl'],
-    // Add any other fields you need here
-    // For example, you can add a custom field like this:
-    hostname: hostname(),
-  }, {
-    headers: {
-      Authorization: `Bearer ${process.env.TOKEN}`,
-      'Content-Type': 'application/json'
+  const res = await axios.post(
+    "https://api.whereby.dev/v1/meetings",
+    {
+      endDate: endDate || new Date(Date.now() + 60 * 60 * 1000).toISOString(), // default to 1 hour from now
+      isLocked: true,
+      roomMode: "group",
+      roomNamePrefix: "example-prefix",
+      roomNamePattern: "uuid",
+      templateType: "viewerMode",
+      fields: ["hostRoomUrl"],
+      recording: {
+        type: "local",
+        enabled: true,
+        startTrigger: "none",
+      },
+
+      // Add any other fields you need here
+      // For example, you can add a custom field like this:
+      hostname: hostname(),
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.TOKEN}`,
+        "Content-Type": "application/json",
+      },
     }
-  });
+  );
 
   return res.data;
 };
 
-
-
 function verifyWherebySignature(req, res, next) {
-  const secret = 'x9m0d48atjm9x5434fqkenqtfnfhhk2q';
-  const signature = req.headers['whereby-signature'];
+  const secret = "x9m0d48atjm9x5434fqkenqtfnfhhk2q";
+  const signature = req.headers["whereby-signature"];
   const payload = JSON.stringify(req.body);
 
-  const hmac = crypto.createHmac('sha256', secret);
+  const hmac = crypto.createHmac("sha256", secret);
   hmac.update(payload);
-  const digest = hmac.digest('hex');
+  const digest = hmac.digest("hex");
 
   if (digest !== signature) {
-    return res.status(401).send('Invalid signature');
+    return res.status(401).send("Invalid signature");
   }
 
   next();
 }
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 // Your API routes
-app.post('/api/create-room', async (req, res) => {
-    try {
-        const roomData = await createWherebyRoom();
-       return res.json(roomData);
-    } catch (error) {
-        console.error('Error creating room:', error);
-      return  res.status(500).json({ error: 'Failed to create room' });
-    }
+app.post("/api/create-room", async (req, res) => {
+  try {
+    const roomData = await createWherebyRoom();
+    return res.json(roomData);
+  } catch (error) {
+    console.error("Error creating room:", error);
+    return res.status(500).json({ error: "Failed to create room" });
+  }
 });
 
 app.listen(5000, () => {
-  console.log('Server running on port 5000');
-  console.log('CORS enabled for origins:', allowedOrigins.join(', '));
+  console.log("Server running on port 5000");
+  console.log("CORS enabled for origins:", allowedOrigins.join(", "));
 });

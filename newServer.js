@@ -125,15 +125,15 @@ const createWherebyRoom = async (endDate) => {
       roomNamePattern: "uuid",
       templateType: "viewerMode",
       fields: ["hostRoomUrl"],
-      recording: {
-        type: "local",
-        enabled: true,
-        destination:{
-            fileFormat:"mkv"
+    //   recording: {
+    //     type: "local",
+    //     enabled: true,
+    //     destination:{
+    //         fileFormat:"mkv"
 
-        },
-        startTrigger: "none",
-      },
+    //     },
+    //     startTrigger: "none",
+    //   },
 
       // Add any other fields you need here
       // For example, you can add a custom field like this:
